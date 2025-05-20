@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "682730904392",
+    "project_id": "ahramatalalmanieh",
+    "storage_bucket": "ahramatalalmanieh.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:682730904392:android:5ea4dec274498e9240717d",
+        "android_client_info": {
+          "package_name": "com.example.studywizard"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDggHm9ro_sCLp4BtGphaq4mIJJ9Wo_wTQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
