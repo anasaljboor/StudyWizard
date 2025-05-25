@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.studywizard.auth.AuthViewModel
-import com.example.studywizard.HomePage.homePage
+import com.example.studywizard.HomePage.HomePage
 import com.example.studywizard.auth.LoginPage
 import com.example.studywizard.auth.SignupPage
 
@@ -23,7 +23,7 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
             SignupPage(modifier, navController, authViewModel)
         }
         composable("home") {
-            homePage(modifier, navController, authViewModel)
+            HomePage(modifier, navController, authViewModel)
         }
     }
 }

@@ -2,15 +2,13 @@ package com.example.studywizard.auth
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -24,60 +22,69 @@ fun SignupPage(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    // ✅ Provide a safe default to avoid null on first render
-    val authState by authViewModel.authSate.observeAsState(initial = AuthState.Unauthenticated)
+    val authState by authViewModel.authState.observeAsState(AuthState.Unauthenticated)
     val context = LocalContext.current
 
     LaunchedEffect(authState) {
         when (authState) {
-            is AuthState.Authenticated -> navController.navigate("home")
-            is AuthState.Error -> Toast.makeText(
-                context,
-                (authState as AuthState.Error).message,
-                Toast.LENGTH_SHORT
-            ).show()
+            is AuthState.Authenticated -> {
+                navController.navigate("home") {
+                    popUpTo("signup") { inclusive = true } // prevent back navigation
+                }
+            }
+            is AuthState.Error -> {
+                val message = (authState as AuthState.Error).message
+                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            }
             else -> Unit
         }
     }
 
     Column(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Signup Page", fontSize = 32.sp)
+        Text("Signup", fontSize = 28.sp)
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
-            label = { Text(text = "Email") }
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text(text = "Password") }
+            label = { Text("Password") },
+            visualTransformation = PasswordVisualTransformation(),
+            modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Button(
             onClick = { authViewModel.signup(email, password) },
-            enabled = authState != AuthState.Loading // ✅ Safe condition
+            enabled = authState != AuthState.Loading,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "Create Account")
+            Text("Create Account")
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        TextButton(onClick = {
-            navController.navigate("login")
-        }) {
-            Text(text = "Have an account? Login")
+        TextButton(
+            onClick = { navController.navigate("login") },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Already have an account? Log in")
         }
     }
 }
