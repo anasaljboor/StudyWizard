@@ -35,7 +35,6 @@ class CohereViewModel : ViewModel() {
         return response.body()?.generations?.firstOrNull()?.text
     }
 
-
     fun processImageAndGenerateAI(context: Context, imageUri: Uri) {
         viewModelScope.launch {
             val text = extractText(context, imageUri) ?: return@launch
@@ -72,5 +71,38 @@ class CohereViewModel : ViewModel() {
             val prompt = buildQuizPrompt(text)
             quizOutput = requestToCohere(prompt)
         }
+    }
+
+    // ✅ NEW FUNCTION to generate quiz directly from typed text input
+    fun generateQuizFromText(text: String) {
+        viewModelScope.launch {
+            val prompt = buildQuizPrompt(text)
+            quizOutput = requestToCohere(prompt)
+        }
+    }
+
+    // You can define custom prompt builders if needed
+    private fun buildQuizPrompt(text: String): String {
+        return """
+            Based on the following text, generate 3 multiple-choice quiz questions:
+            
+            "$text"
+        """.trimIndent()
+    }
+
+    private fun buildSummaryPrompt(text: String): String {
+        return """
+            Summarize the following content:
+            
+            "$text"
+        """.trimIndent()
+    }
+
+    private fun buildFlashcardsPrompt(text: String): String {
+        return """
+            Create 3 flashcards from the following text:
+            
+            "$text"
+        """.trimIndent()
     }
 }

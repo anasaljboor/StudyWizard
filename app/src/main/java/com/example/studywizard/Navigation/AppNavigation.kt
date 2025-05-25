@@ -7,6 +7,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.studywizard.auth.AuthViewModel
 import com.example.studywizard.HomePage.HomePage
+import com.example.studywizard.MenuPages.AboutPage
+import com.example.studywizard.MenuPages.FeaturesPage
+import com.example.studywizard.MenuPages.TeamPage
 import com.example.studywizard.auth.LoginPage
 import com.example.studywizard.auth.SignupPage
 
@@ -24,6 +27,17 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
         }
         composable("home") {
             HomePage(modifier, navController, authViewModel)
+        }
+
+        // ✅ Add the missing composables for navigation
+        composable("about") {
+            AboutPage()
+        }
+        composable("features") {
+            FeaturesPage()
+        }
+        composable("team") {
+            TeamPage()
         }
     }
 }

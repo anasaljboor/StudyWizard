@@ -2,7 +2,12 @@ package com.example.studywizard.HomePage
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Quiz
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Summarize
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -14,8 +19,8 @@ import com.example.studywizard.Navigation.*
 import com.example.studywizard.auth.AuthState
 import com.example.studywizard.auth.AuthViewModel
 import kotlinx.coroutines.launch
+import com.example.studywizard.QuizGen.QuizScreen
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePage(
     modifier: Modifier = Modifier,
@@ -23,41 +28,63 @@ fun HomePage(
     authViewModel: AuthViewModel
 ) {
     val navItemList = listOf(
-        NavItem(label = "Home", icon = Icons.Filled.Home, badgeCount = 0)
+        NavItem(label = "Home", icon = Icons.Filled.Home, badgeCount = 0),
+        NavItem(label = "Quiz", icon = Icons.Filled.Quiz, badgeCount = 0),
+        NavItem(label = "Summary", icon = Icons.Filled.Summarize, badgeCount = 0),
+        NavItem(label = "FlashCard", icon = Icons.Filled.FlashOn, badgeCount = 0)
     )
 
     var selectedIndex by remember { mutableStateOf(0) }
     val authState by authViewModel.authState.observeAsState(AuthState.Unauthenticated)
-
-    LaunchedEffect(authState) {
-        if (authState is AuthState.Unauthenticated) {
-            navController.navigate("login")
-        }
-    }
-
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+
+    // Redirect if not authenticated
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Unauthenticated) {
+            navController.navigate("login") {
+                popUpTo(navController.graph.startDestinationId) { inclusive = true }
+            }
+        }
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            HeadDrawer()
-            DrawerBody(
-                items = listOf(
-                    MenuItem(
-                        id = "home",
-                        title = "Home",
-                        contentDescriptor = "Go to home screen",
-                        icon = Icons.Default.Home
-                    )
-                ),
-                onItemClick = {
-                    scope.launch { drawerState.close() }
-                    if (it.id == "home") selectedIndex = 0
-                }
-            )
+            ModalDrawerSheet {
+                HeadDrawer()
+                DrawerBody(
+                    items = listOf(
+                        MenuItem("home", "Home", "Go to home screen", Icons.Default.Home),
+                        MenuItem("about", "About", "Learn about this app", Icons.Default.Info),
+                        MenuItem("features", "Features", "App functionality", Icons.Default.Star),
+                        MenuItem("team", "Our Team", "Who built the app", Icons.Default.Group),
+                        MenuItem("logout", "Logout", "Sign out", Icons.Default.Logout),
+                    ),
+                    onItemClick = {
+                        scope.launch { drawerState.close() }
+
+                        when (it.id) {
+                            "home" -> selectedIndex = 0
+                            "about" -> navController.navigate("about")
+                            "features" -> navController.navigate("features")
+                            "team" -> navController.navigate("team")
+                            "logout" -> {
+                                authViewModel.signout()
+                                navController.navigate("signin") {
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        inclusive = true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                )
+            }
         }
-    ) {
+    )
+
+    {
         Scaffold(
             modifier = modifier.fillMaxSize(),
             topBar = {
@@ -99,6 +126,7 @@ fun HomePage(
     }
 }
 
+
 @Composable
 fun ContentScreen(
     selectedIndex: Int,
@@ -107,7 +135,9 @@ fun ContentScreen(
 ) {
     when (selectedIndex) {
         0 -> HomeScreen()
-        // Future indices for other screens can be added here
+        1 -> QuizScreen() // Add this line
+        // 2 -> SummaryScreen()
+        // 3 -> FlashCardScreen()
     }
 }
 
@@ -119,6 +149,6 @@ fun HomeScreen() {
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text("Welcome to the Home Screen!", style = MaterialTheme.typography.headlineMedium)
     }
 }
+

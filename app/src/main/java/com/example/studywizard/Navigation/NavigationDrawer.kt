@@ -17,10 +17,10 @@ fun HeadDrawer() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 64.dp),
+            .padding(vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = "Header", fontSize = 60.sp)
+        Text(text = "StudyWizard", fontSize = 40.sp)
     }
 }
 
@@ -31,26 +31,35 @@ fun DrawerBody(
     itemTextStyle: TextStyle = TextStyle(fontSize = 18.sp),
     onItemClick: (MenuItem) -> Unit
 ) {
-    LazyColumn(modifier){
-        items(items) { item ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        onItemClick(item)
-                    }
-                    .padding(16.dp)
-            ) {
-                Icon(
-                    imageVector = item.icon ,
-                    contentDescription = item.contentDescriptor
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Text(
-                    text = item.title,
-                    style = itemTextStyle,
-                    modifier = Modifier.weight(1f)
-                )
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(vertical = 8.dp),
+        verticalArrangement = Arrangement.Bottom // 🔽 Push items to the bottom
+    ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f), // Expand to take available vertical space
+        ) {
+            items(items) { item ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onItemClick(item) }
+                        .padding(vertical = 12.dp)
+                ) {
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = item.contentDescriptor
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = item.title,
+                        style = itemTextStyle,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
     }
