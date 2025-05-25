@@ -16,18 +16,26 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @Composable
-
-fun SignupPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel){
-
+fun SignupPage(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    authViewModel: AuthViewModel
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    val authState = authViewModel.authSate.observeAsState()
+
+    // ✅ Provide a safe default to avoid null on first render
+    val authState by authViewModel.authSate.observeAsState(initial = AuthState.Unauthenticated)
     val context = LocalContext.current
 
-    LaunchedEffect(authState.value) {
-        when(authState.value) {
+    LaunchedEffect(authState) {
+        when (authState) {
             is AuthState.Authenticated -> navController.navigate("home")
-            is AuthState.Error -> Toast.makeText(context , (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT).show()
+            is AuthState.Error -> Toast.makeText(
+                context,
+                (authState as AuthState.Error).message,
+                Toast.LENGTH_SHORT
+            ).show()
             else -> Unit
         }
     }
@@ -57,9 +65,10 @@ fun SignupPage(modifier: Modifier = Modifier, navController: NavController, auth
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = {
-            authViewModel.signup(email , password)
-        }, enabled = authState.value != AuthState.Loading) {
+        Button(
+            onClick = { authViewModel.signup(email, password) },
+            enabled = authState != AuthState.Loading // ✅ Safe condition
+        ) {
             Text(text = "Create Account")
         }
 
@@ -68,7 +77,7 @@ fun SignupPage(modifier: Modifier = Modifier, navController: NavController, auth
         TextButton(onClick = {
             navController.navigate("login")
         }) {
-            Text(text = "Have an account, Login")
+            Text(text = "Have an account? Login")
         }
     }
 }

@@ -16,17 +16,26 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @Composable
-fun LoginPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel) {
+fun LoginPage(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    authViewModel: AuthViewModel
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
-    val authState = authViewModel.authSate.observeAsState()
+    // ✅ Safe default state to prevent null issues
+    val authState by authViewModel.authSate.observeAsState(initial = AuthState.Unauthenticated)
     val context = LocalContext.current
 
-    LaunchedEffect(authState.value) {
-        when(authState.value) {
+    LaunchedEffect(authState) {
+        when (authState) {
             is AuthState.Authenticated -> navController.navigate("home")
-            is AuthState.Error -> Toast.makeText(context , (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT).show()
+            is AuthState.Error -> Toast.makeText(
+                context,
+                (authState as AuthState.Error).message,
+                Toast.LENGTH_SHORT
+            ).show()
             else -> Unit
         }
     }
@@ -64,12 +73,13 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavController, authV
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        TextButton(onClick = {
-            navController.navigate("signup")
-        },
-            enabled = authState.value != AuthState.Loading
-            ) {
-            Text(text = "Don't have an account, Signup")
+        TextButton(
+            onClick = {
+                navController.navigate("signup")
+            },
+            enabled = authState != AuthState.Loading // ✅ Safe check
+        ) {
+            Text(text = "Don't have an account? Signup")
         }
     }
 }

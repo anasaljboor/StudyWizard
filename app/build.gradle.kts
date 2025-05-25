@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.example.studywizard"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.studywizard"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -55,7 +55,6 @@ dependencies {
     implementation(libs.firebase.auth.ktx)
     implementation(libs.androidx.navigation.runtime.android)
     implementation(libs.androidx.runtime.livedata)
-    implementation(libs.androidx.navigation.compose.jvmstubs)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -64,9 +63,13 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    implementation("androidx.navigation:navigation-compose:2.9.0")
+
+
+
     // ML Kit OCR
     implementation("com.google.mlkit:text-recognition:16.0.0-beta3")
-    implementation("com.google.mlkit:text-recognition-latin:16.0.0-beta3")
+
 
     // CameraX
     implementation("androidx.camera:camera-camera2:1.3.0")

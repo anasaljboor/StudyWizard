@@ -10,20 +10,20 @@ import com.example.studywizard.HomePage.homePage
 import com.example.studywizard.auth.LoginPage
 import com.example.studywizard.auth.SignupPage
 
-@Composable
 
-fun AppNavigation(modifier: Modifier = Modifier , authViewModel: AuthViewModel){
+@Composable
+fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "login" , builder = {
+    NavHost(navController = navController, startDestination = "login") {
         composable("login") {
-            LoginPage(modifier , navController , authViewModel)
+            LoginPage(modifier, navController, authViewModel)
         }
         composable("signup") {
-            SignupPage(modifier , navController , authViewModel)
+            SignupPage(modifier, navController, authViewModel)
         }
         composable("home") {
-            homePage(modifier , navController , authViewModel)
+            homePage(modifier, navController, authViewModel)
         }
-    })
+    }
 }
