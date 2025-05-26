@@ -23,12 +23,18 @@ fun QuizScreen(
     context: Context = LocalContext.current
 ) {
     var inputText by remember { mutableStateOf("") }
-    val quizOutput by viewModel.quizOutputState.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
+    val quizOutput by viewModel.quizOutputState.collectAsState()
     val parsedQuestions = quizOutput?.let { parseQuizOutput(it) } ?: emptyList()
     val userAnswers = remember { mutableStateMapOf<Int, String>() }
     val feedbackShown = remember { mutableStateMapOf<Int, Boolean>() }
+
+    LaunchedEffect(quizOutput) {
+        userAnswers.clear()
+        feedbackShown.clear()
+    }
+
 
     Column(Modifier.fillMaxSize().padding(16.dp)) {
         Text("Quiz Generator", style = MaterialTheme.typography.headlineMedium)

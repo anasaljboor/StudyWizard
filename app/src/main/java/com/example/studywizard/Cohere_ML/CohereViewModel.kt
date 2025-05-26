@@ -90,8 +90,8 @@ class CohereViewModel : ViewModel() {
     }
 
     fun generateQuizFromText(text: String) {
-        _isLoading.value = true
         viewModelScope.launch {
+            _isLoading.value = true
             try {
                 val prompt = buildQuizPrompt(text)
                 val response = requestToCohere(prompt)
@@ -103,6 +103,7 @@ class CohereViewModel : ViewModel() {
             }
         }
     }
+
 
     fun generateQuiz(context: Context, imageUri: Uri) {
         viewModelScope.launch {
@@ -120,19 +121,14 @@ class CohereViewModel : ViewModel() {
     // You can define custom prompt builders if needed
     private fun buildQuizPrompt(text: String): String {
         return """
-            Based on the following text, generate 3 multiple-choice quiz questions. Each question must follow this format:
-
-            1. Question text
-            A. Choice A
-            B. Choice B
-            C. Choice C
-            D. Choice D
-            Answer: B
-
-            Text:
-            "$text"
-        """.trimIndent()
+        Based on the following content, generate 3 multiple-choice quiz questions.
+        Each question should be followed by choices A, B, C, D and clearly state the correct answer at the end.
+        
+        Content:
+        "$text"
+    """.trimIndent()
     }
+
     private fun buildSummaryPrompt(text: String): String {
         return """
             Summarize the following content:
