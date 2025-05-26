@@ -13,6 +13,8 @@ import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.livedata.observeAsState
 
+//يا ساقط
+
 @Composable
 fun ScaffoldWithDrawer(
     navController: NavController,
@@ -95,3 +97,5 @@ fun ScaffoldWithDrawer(
         }
     }
 }
+
+
