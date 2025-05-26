@@ -7,30 +7,32 @@ data class QuizQuestion(
 )
 
 fun parseQuizOutput(quiz: String): List<QuizQuestion> {
-    val questions = quiz.trim().split(Regex("\\n\\s*\\d+\\.")).filter { it.isNotBlank() }
-    val parsed = mutableListOf<QuizQuestion>()
+    val questionBlocks = quiz.trim().split(Regex("\\n(?=\\d+\\.)")) // split on new questions like "1.", "2." etc.
+    val result = mutableListOf<QuizQuestion>()
 
-    for (q in questions) {
-        val lines = q.trim().lines()
-        if (lines.size < 3) continue
+    for (block in questionBlocks) {
+        val lines = block.lines().map { it.trim() }.filter { it.isNotEmpty() }
 
-        val text = lines[0].trim()
+        val questionLine = lines.firstOrNull() ?: continue
+        val questionText = questionLine.substringAfter(".").trim()
+
         val choices = mutableMapOf<String, String>()
-        var answer = ""
+        var answer: String? = null
 
-        lines.drop(1).forEach { line ->
-            val match = Regex("^([A-D])\\.\\s*(.*)").find(line)
-            if (match != null) {
-                choices[match.groupValues[1]] = match.groupValues[2]
-            } else if (line.startsWith("Answer:", true)) {
-                answer = line.substringAfter(":").trim()
+        for (line in lines.drop(1)) {
+            when {
+                line.startsWith("A", ignoreCase = true) -> choices["A"] = line.removePrefix("A.").removePrefix("A)").trim()
+                line.startsWith("B", ignoreCase = true) -> choices["B"] = line.removePrefix("B.").removePrefix("B)").trim()
+                line.startsWith("C", ignoreCase = true) -> choices["C"] = line.removePrefix("C.").removePrefix("C)").trim()
+                line.startsWith("D", ignoreCase = true) -> choices["D"] = line.removePrefix("D.").removePrefix("D)").trim()
+                line.contains("Answer", ignoreCase = true) -> answer = line.substringAfter(":").substringAfter(".").trim().uppercase()
             }
         }
 
-        if (text.isNotBlank() && choices.isNotEmpty() && answer.isNotBlank()) {
-            parsed.add(QuizQuestion(text, choices, answer))
+        if (questionText.isNotBlank() && choices.size == 4 && !answer.isNullOrBlank()) {
+            result.add(QuizQuestion(text = questionText, choices = choices, correctAnswer = answer!!))
         }
     }
 
-    return parsed
+    return result
 }

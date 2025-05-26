@@ -15,11 +15,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.studywizard.FlashCard.FlashcardsScreen
 import com.example.studywizard.Navigation.*
 import com.example.studywizard.auth.AuthState
 import com.example.studywizard.auth.AuthViewModel
 import kotlinx.coroutines.launch
 import com.example.studywizard.QuizGen.QuizScreen
+import com.example.studywizard.Summarize.SummaryScreen
 
 @Composable
 fun HomePage(
@@ -136,8 +138,8 @@ fun ContentScreen(
     when (selectedIndex) {
         0 -> HomeScreen()
         1 -> QuizScreen() // Add this line
-        // 2 -> SummaryScreen()
-        // 3 -> FlashCardScreen()
+        2 -> SummaryScreen()
+        3 -> FlashcardsScreen()
     }
 }
 
