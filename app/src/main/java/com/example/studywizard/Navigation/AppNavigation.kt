@@ -5,11 +5,13 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.studywizard.FlashCard.FlashcardsScreen
 import com.example.studywizard.auth.AuthViewModel
 import com.example.studywizard.HomePage.HomePage
 import com.example.studywizard.MenuPages.AboutPage
 import com.example.studywizard.MenuPages.FeaturesPage
 import com.example.studywizard.MenuPages.TeamPage
+import com.example.studywizard.Summarize.SummaryScreen
 import com.example.studywizard.auth.LoginPage
 import com.example.studywizard.auth.SignupPage
 
@@ -38,6 +40,15 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
         }
         composable("team") {
             TeamPage(navController = navController, authViewModel = authViewModel)
+        }
+        composable("summary") {
+            SummaryScreen()
+        }
+        composable("flashcards") {
+            FlashcardsScreen()
+        }
+        composable("quiz") {
+            SummaryScreen()
         }
     }
 }

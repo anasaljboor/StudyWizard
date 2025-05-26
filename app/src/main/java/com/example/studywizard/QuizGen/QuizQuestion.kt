@@ -7,30 +7,30 @@ data class QuizQuestion(
 )
 
 fun parseQuizOutput(quiz: String): List<QuizQuestion> {
-    val questions = quiz.trim().split(Regex("\\n\\s*\\d+\\.")).filter { it.isNotBlank() }
-    val parsed = mutableListOf<QuizQuestion>()
+    val result = mutableListOf<QuizQuestion>()
+    val blocks = quiz.trim().split(Regex("\\n(?=\\d+\\.)"))  // Split at each new question
 
-    for (q in questions) {
-        val lines = q.trim().lines()
-        if (lines.size < 3) continue
+    for (block in blocks) {
+        val lines = block.trim().lines()
+        if (lines.size < 5) continue
 
-        val text = lines[0].trim()
+        val questionText = lines[0].substringAfter(".").trim()
         val choices = mutableMapOf<String, String>()
-        var answer = ""
 
         lines.drop(1).forEach { line ->
-            val match = Regex("^([A-D])\\.\\s*(.*)").find(line)
+            val match = Regex("^([A-Da-d])\\.?\\)?\\s+(.*)").find(line.trim())
             if (match != null) {
-                choices[match.groupValues[1]] = match.groupValues[2]
-            } else if (line.startsWith("Answer:", true)) {
-                answer = line.substringAfter(":").trim()
+                choices[match.groupValues[1].uppercase()] = match.groupValues[2].trim()
             }
         }
 
-        if (text.isNotBlank() && choices.isNotEmpty() && answer.isNotBlank()) {
-            parsed.add(QuizQuestion(text, choices, answer))
+        val answerLine = lines.lastOrNull { it.contains("Answer", ignoreCase = true) }
+        val correct = answerLine?.substringAfter(":")?.trim()?.uppercase()?.takeIf { it in choices.keys } ?: "A"
+
+        if (questionText.isNotBlank() && choices.size >= 2) {
+            result.add(QuizQuestion(questionText, choices, correct))
         }
     }
 
-    return parsed
+    return result
 }
