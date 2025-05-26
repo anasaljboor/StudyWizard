@@ -28,12 +28,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.TextField
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.Alignment
-
+import androidx.compose.material3.RadioButton
 
 @Composable
 fun QuizScreen(
@@ -46,16 +48,20 @@ fun QuizScreen(
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        selectedImageUri = uri
-    }
+    ) { uri: Uri? -> selectedImageUri = uri }
 
     val filePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        // Optional: handle PDF/doc upload logic
-        selectedImageUri = uri
+    ) { uri: Uri? -> selectedImageUri = uri }
+
+    // Parsed list of questions
+    val parsedQuestions = remember(quizOutput) {
+        quizOutput?.let { parseQuizOutput(it) } ?: emptyList()
     }
+
+    // Track user answers
+    val userAnswers = remember { mutableStateMapOf<Int, String>() }
+    val feedbackShown = remember { mutableStateMapOf<Int, Boolean>() }
 
     Column(
         modifier = Modifier
@@ -63,19 +69,47 @@ fun QuizScreen(
             .padding(16.dp)
     ) {
         Text("Quiz Generator", style = MaterialTheme.typography.headlineMedium)
-
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (quizOutput != null) {
-            Text("Generated Quiz:", style = MaterialTheme.typography.titleMedium)
-            Text(quizOutput, style = MaterialTheme.typography.bodyLarge)
-        } else if (selectedImageUri != null || inputText.isNotBlank()) {
+        if (quizOutput == null && (inputText.isNotBlank() || selectedImageUri != null)) {
             Text("Waiting for output...", style = MaterialTheme.typography.bodyMedium)
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.weight(1f)
+        ) {
+            items(parsedQuestions.size) { index ->
+                val question = parsedQuestions[index]
+                Column {
+                    Text("${index + 1}. ${question.text}", style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
 
-        // Input Bar at bottom
+                    question.choices.forEach { choice ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(
+                                selected = userAnswers[index] == choice.key,
+                                onClick = {
+                                    userAnswers[index] = choice.key
+                                    feedbackShown[index] = true
+                                }
+                            )
+                            Text("${choice.key}. ${choice.value}")
+                        }
+                    }
+
+                    if (feedbackShown[index] == true) {
+                        val isCorrect = userAnswers[index] == question.correctAnswer
+                        Text(
+                            text = if (isCorrect) "✅ Correct!" else "❌ Incorrect. Answer: ${question.correctAnswer}",
+                            color = if (isCorrect) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            }
+        }
+
+        // Input Bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -86,13 +120,9 @@ fun QuizScreen(
             IconButton(onClick = { imagePickerLauncher.launch("image/*") }) {
                 Icon(Icons.Default.Image, contentDescription = "Upload Image")
             }
-
-            IconButton(onClick = {
-                // Placeholder for camera logic, can integrate CameraX or a photo intent
-            }) {
+            IconButton(onClick = { /* TODO: Add Camera */ }) {
                 Icon(Icons.Default.CameraAlt, contentDescription = "Take Photo")
             }
-
             IconButton(onClick = { filePickerLauncher.launch("*/*") }) {
                 Icon(Icons.Default.UploadFile, contentDescription = "Upload File")
             }
