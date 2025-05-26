@@ -31,13 +31,13 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
 
         // ✅ Add the missing composables for navigation
         composable("about") {
-            AboutPage()
+            AboutPage(navController = navController, authViewModel = authViewModel)
         }
         composable("features") {
-            FeaturesPage()
+            FeaturesPage(navController = navController, authViewModel = authViewModel)
         }
         composable("team") {
-            TeamPage()
+            TeamPage(navController = navController, authViewModel = authViewModel)
         }
     }
 }
