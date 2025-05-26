@@ -31,21 +31,14 @@ class CohereViewModel : ViewModel() {
     }
 
     private suspend fun requestToCohere(prompt: String): String? {
-        Log.d("Cohere", "Sending prompt: $prompt")
-
         val response = CohereService.api.generate(
             GenerateRequest(prompt = prompt),
             auth = Constants.COHERE_API_KEY
         )
-
         if (!response.isSuccessful) {
-            Log.e("Cohere", "Error: ${response.code()} - ${response.errorBody()?.string()}")
-            return null
+            return "ERROR_${response.code()}"
         }
-
-        val text = response.body()?.generations?.firstOrNull()?.text
-        Log.d("Cohere", "Received response: $text")
-        return text
+        return response.body()?.generations?.firstOrNull()?.text
     }
 
 
@@ -97,11 +90,17 @@ class CohereViewModel : ViewModel() {
     }
 
     fun generateQuizFromText(text: String) {
+        _isLoading.value = true
         viewModelScope.launch {
-            _quizOutputState.value = "" // Force re-emission even if same response
-            val prompt = buildQuizPrompt(text)
-            val response = requestToCohere(prompt)
-            _quizOutputState.value = response ?: "ERROR"
+            try {
+                val prompt = buildQuizPrompt(text)
+                val response = requestToCohere(prompt)
+                _quizOutputState.value = response ?: "EMPTY_RESPONSE"
+            } catch (e: Exception) {
+                _quizOutputState.value = "EXCEPTION"
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
@@ -121,12 +120,19 @@ class CohereViewModel : ViewModel() {
     // You can define custom prompt builders if needed
     private fun buildQuizPrompt(text: String): String {
         return """
-            Based on the following text, generate 3 multiple-choice quiz questions:
-            
+            Based on the following text, generate 3 multiple-choice quiz questions. Each question must follow this format:
+
+            1. Question text
+            A. Choice A
+            B. Choice B
+            C. Choice C
+            D. Choice D
+            Answer: B
+
+            Text:
             "$text"
         """.trimIndent()
     }
-
     private fun buildSummaryPrompt(text: String): String {
         return """
             Summarize the following content:

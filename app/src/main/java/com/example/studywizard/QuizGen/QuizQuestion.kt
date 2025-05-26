@@ -7,30 +7,29 @@ data class QuizQuestion(
 )
 
 fun parseQuizOutput(quiz: String): List<QuizQuestion> {
-    val questionBlocks = quiz.trim().split(Regex("\\n(?=\\d+\\.)")) // split on new questions like "1.", "2." etc.
     val result = mutableListOf<QuizQuestion>()
+    val blocks = quiz.trim().split(Regex("""(?=\d+\.\s)""")) // Splits at 1. , 2. , 3. etc.
 
-    for (block in questionBlocks) {
-        val lines = block.lines().map { it.trim() }.filter { it.isNotEmpty() }
+    for (block in blocks) {
+        val lines = block.trim().lines().map { it.trim() }.filter { it.isNotBlank() }
 
-        val questionLine = lines.firstOrNull() ?: continue
-        val questionText = questionLine.substringAfter(".").trim()
+        if (lines.size < 6) continue
+
+        val text = lines[0].removePrefix(Regex("""\d+\.\s*""").toString()).trim()
 
         val choices = mutableMapOf<String, String>()
-        var answer: String? = null
-
         for (line in lines.drop(1)) {
-            when {
-                line.startsWith("A", ignoreCase = true) -> choices["A"] = line.removePrefix("A.").removePrefix("A)").trim()
-                line.startsWith("B", ignoreCase = true) -> choices["B"] = line.removePrefix("B.").removePrefix("B)").trim()
-                line.startsWith("C", ignoreCase = true) -> choices["C"] = line.removePrefix("C.").removePrefix("C)").trim()
-                line.startsWith("D", ignoreCase = true) -> choices["D"] = line.removePrefix("D.").removePrefix("D)").trim()
-                line.contains("Answer", ignoreCase = true) -> answer = line.substringAfter(":").substringAfter(".").trim().uppercase()
+            val match = Regex("""^([A-Da-d])[.)]\s+(.*)""").find(line)
+            if (match != null) {
+                choices[match.groupValues[1].uppercase()] = match.groupValues[2].trim()
             }
         }
 
-        if (questionText.isNotBlank() && choices.size == 4 && !answer.isNullOrBlank()) {
-            result.add(QuizQuestion(text = questionText, choices = choices, correctAnswer = answer!!))
+        val answerLine = lines.find { it.contains("Answer", ignoreCase = true) }
+        val answer = answerLine?.substringAfter(":")?.trim()?.uppercase()
+
+        if (text.isNotBlank() && choices.size >= 3 && answer in choices.keys) {
+            result.add(QuizQuestion(text, choices, answer!!))
         }
     }
 

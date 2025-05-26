@@ -23,8 +23,6 @@ fun QuizScreen(
     context: Context = LocalContext.current
 ) {
     var inputText by remember { mutableStateOf("") }
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
-
     val quizOutput by viewModel.quizOutputState.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
@@ -32,103 +30,97 @@ fun QuizScreen(
     val userAnswers = remember { mutableStateMapOf<Int, String>() }
     val feedbackShown = remember { mutableStateMapOf<Int, Boolean>() }
 
-    LaunchedEffect(isLoading) {
-        if (isLoading) {
-            userAnswers.clear()
-            feedbackShown.clear()
-        }
-    }
-
-    val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? -> selectedImageUri = uri }
-
-    val filePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? -> selectedImageUri = uri }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
+    Column(Modifier.fillMaxSize().padding(16.dp)) {
         Text("Quiz Generator", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(16.dp))
 
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            contentAlignment = Alignment.Center
-        ) {
-            when {
-                isLoading -> {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Generating quiz...", style = MaterialTheme.typography.bodyMedium)
-                    }
+        TextField(
+            value = inputText,
+            onValueChange = { inputText = it },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("Enter your text here") }
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(onClick = {
+            if (inputText.isNotBlank()) {
+                viewModel.generateQuizFromText(inputText)
+                inputText = ""
+            }
+        }) {
+            Text("Generate Quiz")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        when {
+            isLoading -> {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator()
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Generating quiz...")
                 }
+            }
 
-                parsedQuestions.isNotEmpty() -> {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(parsedQuestions.size) { index ->
-                            val question = parsedQuestions[index]
-                            Column {
-                                Text("${index + 1}. ${question.text}", style = MaterialTheme.typography.titleMedium)
-                                Spacer(modifier = Modifier.height(8.dp))
+            parsedQuestions.isNotEmpty() -> {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    items(parsedQuestions.size) { index ->
+                        val question = parsedQuestions[index]
+                        Column {
+                            Text(
+                                "${index + 1}. ${question.text}",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
 
-                                question.choices.forEach { choice ->
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        RadioButton(
-                                            selected = userAnswers[index] == choice.key,
-                                            onClick = {
-                                                userAnswers[index] = choice.key
-                                                feedbackShown[index] = true
-                                            }
-                                        )
-                                        Text("${choice.key}. ${choice.value}")
-                                    }
-                                }
-
-                                if (feedbackShown[index] == true) {
-                                    val isCorrect = userAnswers[index] == question.correctAnswer
-                                    Text(
-                                        text = if (isCorrect) "✅ Correct!" else "❌ Incorrect. Answer: ${question.correctAnswer}",
-                                        color = if (isCorrect) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                            question.choices.forEach { (key, value) ->
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    RadioButton(
+                                        selected = userAnswers[index] == key,
+                                        onClick = {
+                                            userAnswers[index] = key
+                                            feedbackShown[index] = true
+                                        }
                                     )
+                                    Text("$key. $value")
                                 }
+                            }
+
+                            if (feedbackShown[index] == true) {
+                                val correct = userAnswers[index] == question.correctAnswer
+                                Text(
+                                    if (correct) "✅ Correct!"
+                                    else "❌ Incorrect. Answer: ${question.correctAnswer}",
+                                    color = if (correct) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                                )
                             }
                         }
                     }
                 }
-
-                // ✅ Add this to catch API/parse issues
-                quizOutput?.startsWith("ERROR_") == true -> {
-                    Text("❌ Failed to generate quiz. Please try again.", color = MaterialTheme.colorScheme.error)
-                }
-
-                quizOutput == "EMPTY_RESPONSE" -> {
-                    Text("⚠️ Cohere returned an empty response.")
-                }
-
-                quizOutput == "EXCEPTION" -> {
-                    Text("🚨 Network or API error occurred.")
-                }
-
-                else -> {
-                    Text("Submit a prompt or image to generate quiz questions.", style = MaterialTheme.typography.bodyMedium)
-                }
             }
 
+            quizOutput == "EXCEPTION" -> {
+                Text("❌ Error communicating with Cohere.", color = MaterialTheme.colorScheme.error)
+            }
 
+            quizOutput == "EMPTY_RESPONSE" -> {
+                Text("⚠️ Cohere returned an empty response.")
+            }
+
+            quizOutput?.startsWith("ERROR_") == true -> {
+                Text("❌ API error: ${quizOutput}", color = MaterialTheme.colorScheme.error)
+            }
+
+            else -> {
+                Text("Submit text to generate a quiz.", style = MaterialTheme.typography.bodyMedium)
+            }
         }
+    }
+
+}
 
         // Input Controls
-        Row(
+        /*Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp),
@@ -166,3 +158,4 @@ fun QuizScreen(
         }
     }
 }
+*/
