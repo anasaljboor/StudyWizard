@@ -69,7 +69,8 @@ dependencies {
 
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.material:material-icons-core")
-    implementation("androidx.compose.runtime:runtime-livedata:1.6.1") // or latest stable
+    implementation("androidx.compose.runtime:runtime-livedata:1.6.1")
+    implementation(libs.firebase.firestore.ktx) // or latest stable
 
 
     // Testing

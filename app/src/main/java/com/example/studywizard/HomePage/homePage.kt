@@ -1,27 +1,23 @@
 package com.example.studywizard.HomePage
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Quiz
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Summarize
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.studywizard.FlashCard.FlashcardsScreen
 import com.example.studywizard.Navigation.*
+import com.example.studywizard.QuizGen.QuizScreen
+import com.example.studywizard.Summarize.SummaryScreen
 import com.example.studywizard.auth.AuthState
 import com.example.studywizard.auth.AuthViewModel
 import kotlinx.coroutines.launch
-import com.example.studywizard.QuizGen.QuizScreen
-import com.example.studywizard.Summarize.SummaryScreen
 
 @Composable
 fun HomePage(
@@ -30,10 +26,10 @@ fun HomePage(
     authViewModel: AuthViewModel
 ) {
     val navItemList = listOf(
-        NavItem(label = "Home", icon = Icons.Filled.Home, badgeCount = 0),
-        NavItem(label = "Quiz", icon = Icons.Filled.Quiz, badgeCount = 0),
-        NavItem(label = "Summary", icon = Icons.Filled.Summarize, badgeCount = 0),
-        NavItem(label = "FlashCard", icon = Icons.Filled.FlashOn, badgeCount = 0)
+        NavItem("Home", Icons.Filled.Home, 0),
+        NavItem("Quiz", Icons.Filled.Quiz, 0),
+        NavItem("Summary", Icons.Filled.Summarize, 0),
+        NavItem("FlashCard", Icons.Filled.FlashOn, 0)
     )
 
     var selectedIndex by remember { mutableStateOf(0) }
@@ -41,7 +37,6 @@ fun HomePage(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    // Redirect if not authenticated
     LaunchedEffect(authState) {
         if (authState is AuthState.Unauthenticated) {
             navController.navigate("login") {
@@ -65,7 +60,6 @@ fun HomePage(
                     ),
                     onItemClick = {
                         scope.launch { drawerState.close() }
-
                         when (it.id) {
                             "home" -> selectedIndex = 0
                             "about" -> navController.navigate("about")
@@ -84,9 +78,7 @@ fun HomePage(
                 )
             }
         }
-    )
-
-    {
+    ) {
         Scaffold(
             modifier = modifier.fillMaxSize(),
             topBar = {
@@ -101,14 +93,12 @@ fun HomePage(
                             selected = selectedIndex == index,
                             onClick = { selectedIndex = index },
                             icon = {
-                                BadgedBox(
-                                    badge = {
-                                        if (navItem.badgeCount > 0) {
-                                            Badge { Text("${navItem.badgeCount}") }
-                                        }
+                                BadgedBox(badge = {
+                                    if (navItem.badgeCount > 0) {
+                                        Badge { Text("${navItem.badgeCount}") }
                                     }
-                                ) {
-                                    Icon(imageVector = navItem.icon, contentDescription = navItem.label)
+                                }) {
+                                    Icon(navItem.icon, contentDescription = navItem.label)
                                 }
                             },
                             label = { Text(navItem.label) }
@@ -128,29 +118,71 @@ fun HomePage(
     }
 }
 
-
 @Composable
 fun ContentScreen(
     selectedIndex: Int,
     navController: NavController,
     authViewModel: AuthViewModel
 ) {
+    // Use viewModel() to get lifecycle-aware HomePageViewModel instance
+    val homePageViewModel: HomePageViewModel = viewModel()
+
     when (selectedIndex) {
-        0 -> HomeScreen()
-        1 -> QuizScreen() // Add this line
+        0 -> HomeScreen(authViewModel = authViewModel, homePageViewModel = homePageViewModel)
+        1 -> QuizScreen()
         2 -> SummaryScreen()
         3 -> FlashcardsScreen()
     }
 }
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    authViewModel: AuthViewModel,
+    homePageViewModel: HomePageViewModel
+) {
+    val history by homePageViewModel.history.observeAsState(emptyList())
+    val historyError by homePageViewModel.error.observeAsState()
+    val userId = authViewModel.getUserId()
+
+    LaunchedEffect(userId) {
+        if (userId != null) {
+            homePageViewModel.fetchHistory(userId)
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
+            .padding(16.dp)
     ) {
+        when {
+            userId == null -> {
+                Text("Please log in to see your history.")
+            }
+            historyError != null -> {
+                Text("Error loading history: $historyError")
+            }
+            history.isEmpty() -> {
+                Text("No history yet.")
+            }
+            else -> {
+                LazyColumn {
+                    items(history.size) { index ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                        ) {
+                            Text(
+                                text = history[index],
+                                modifier = Modifier.padding(16.dp),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+                }
+            }
+        }
     }
 }
-

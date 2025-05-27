@@ -1,16 +1,18 @@
 package com.example.studywizard.auth
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.Timestamp
 
 class AuthViewModel : ViewModel() {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
     private val _authState = MutableLiveData<AuthState>()
-    val authState: LiveData<AuthState> = _authState  // ✅ Fixed typo here
+    val authState: LiveData<AuthState> = _authState
 
     init {
         checkAuthStatus()
@@ -29,7 +31,6 @@ class AuthViewModel : ViewModel() {
             _authState.value = AuthState.Error("Email or password can't be empty")
             return
         }
-
         _authState.value = AuthState.Loading
 
         auth.signInWithEmailAndPassword(email, password)
@@ -47,15 +48,15 @@ class AuthViewModel : ViewModel() {
             _authState.value = AuthState.Error("Email or password can't be empty")
             return
         }
-
         _authState.value = AuthState.Loading
 
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
-                _authState.value = if (task.isSuccessful) {
-                    AuthState.Authenticated
+                if (task.isSuccessful) {
+                    // You can add additional Firestore user document creation here if you want
+                    _authState.value = AuthState.Authenticated
                 } else {
-                    AuthState.Error(task.exception?.message ?: "Signup failed")
+                    _authState.value = AuthState.Error(task.exception?.message ?: "Signup failed")
                 }
             }
     }
@@ -64,6 +65,9 @@ class AuthViewModel : ViewModel() {
         auth.signOut()
         _authState.value = AuthState.Unauthenticated
     }
+
+    // Provide user ID to other ViewModels
+    fun getUserId(): String? = auth.currentUser?.uid
 }
 
 sealed class AuthState {
