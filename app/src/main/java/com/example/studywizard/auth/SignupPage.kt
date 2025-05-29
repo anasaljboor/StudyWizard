@@ -19,6 +19,8 @@ fun SignupPage(
     navController: NavController,
     authViewModel: AuthViewModel
 ) {
+    var firstName by remember { mutableStateOf("") }
+    var lastName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -29,7 +31,7 @@ fun SignupPage(
         when (authState) {
             is AuthState.Authenticated -> {
                 navController.navigate("home") {
-                    popUpTo("signup") { inclusive = true } // prevent back navigation
+                    popUpTo("signup") { inclusive = true }
                 }
             }
             is AuthState.Error -> {
@@ -52,6 +54,24 @@ fun SignupPage(
         Spacer(modifier = Modifier.height(24.dp))
 
         OutlinedTextField(
+            value = firstName,
+            onValueChange = { firstName = it },
+            label = { Text("First Name") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = lastName,
+            onValueChange = { lastName = it },
+            label = { Text("Last Name") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedTextField(
             value = email,
             onValueChange = { email = it },
             label = { Text("Email") },
@@ -71,7 +91,9 @@ fun SignupPage(
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { authViewModel.signup(email, password) },
+            onClick = {
+                authViewModel.signup(email, password, firstName, lastName)
+            },
             enabled = authState != AuthState.Loading,
             modifier = Modifier.fillMaxWidth()
         ) {

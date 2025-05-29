@@ -44,7 +44,9 @@ fun ScaffoldWithDrawer(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                HeadDrawer()
+                HeadDrawer(authViewModel = authViewModel, onProfileClick = {
+                    navController.navigate("profile") // or whatever your profile route is
+                })
                 DrawerBody(
                     items = listOf(
                         MenuItem("home", "Home", "Go to home screen", Icons.Default.Home),

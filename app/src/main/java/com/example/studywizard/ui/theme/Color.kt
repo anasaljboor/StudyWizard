@@ -2,15 +2,20 @@ package com.example.studywizard.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Red accent
-val RedAccent = Color(0xFFD32F2F)
+// Primary Theme Colors
+val NavyBlue = Color(0xFF1E3A8A)
+val SoftGreen = Color(0xFF10B981)
+val Amber = Color(0xFFF59E0B)
 
-// Dark theme colors
-val BackgroundBlack = Color(0xFF121212)
-val SurfaceDark = Color(0xFF1E1E1E)
-val SurfaceVariantDark = Color(0xFF2C2C2C)
+// Neutrals & Surfaces
+val White = Color(0xFFFFFFFF)
+val LightGrey = Color(0xFFF3F4F6)
+val LightNavy = Color(0xFF2C3E75)
+val SoftBackground = Color(0xFFF9FAFB)
 
-// Light theme colors
-val LightBackground = Color(0xFFFFFFFF)
-val LightSurface = Color(0xFFF2F2F2)
-val LightSurfaceVariant = Color(0xFFE0E0E0)
+// Text Colors
+val DarkText = Color(0xFF111827)
+val OnSurfaceGray = Color(0xFF374151)
+
+// Feedback
+val ErrorRed = Color(0xFFEF4444)

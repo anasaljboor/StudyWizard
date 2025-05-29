@@ -14,6 +14,7 @@ import com.example.studywizard.MenuPages.TeamPage
 import com.example.studywizard.Summarize.SummaryScreen
 import com.example.studywizard.auth.LoginPage
 import com.example.studywizard.auth.SignupPage
+import com.example.studywizard.profile.ProfilePage
 
 
 @Composable
@@ -29,6 +30,10 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
         }
         composable("home") {
             HomePage(modifier, navController, authViewModel)
+        }
+
+        composable("profile") {
+            ProfilePage(navController = navController, authViewModel = authViewModel)
         }
 
         // ✅ Add the missing composables for navigation

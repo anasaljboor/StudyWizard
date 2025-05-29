@@ -19,6 +19,7 @@ import com.example.studywizard.auth.AuthState
 import com.example.studywizard.auth.AuthViewModel
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePage(
     modifier: Modifier = Modifier,
@@ -37,6 +38,15 @@ fun HomePage(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
+    var userName by remember { mutableStateOf<String?>(null) }
+
+    // Fetch user name once
+    LaunchedEffect(Unit) {
+        authViewModel.getUserName {
+            userName = it
+        }
+    }
+
     LaunchedEffect(authState) {
         if (authState is AuthState.Unauthenticated) {
             navController.navigate("login") {
@@ -49,10 +59,15 @@ fun HomePage(
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet {
-                HeadDrawer()
+                HeadDrawer(authViewModel = authViewModel, onProfileClick = {
+                    navController.navigate("profile") // or whatever your profile route is
+                })
                 DrawerBody(
                     items = listOf(
                         MenuItem("home", "Home", "Go to home screen", Icons.Default.Home),
+                        MenuItem("quiz", "Quizzes", "Go to quizzes screen", Icons.Default.Quiz),
+                        MenuItem("flash", "FlashCards", "Go to flashcards screen", Icons.Default.FlashOn),
+                        MenuItem("summary", "Summary", "Go to home screen", Icons.Default.Summarize),
                         MenuItem("about", "About", "Learn about this app", Icons.Default.Info),
                         MenuItem("features", "Features", "App functionality", Icons.Default.Star),
                         MenuItem("team", "Our Team", "Who built the app", Icons.Default.Group),
@@ -82,9 +97,19 @@ fun HomePage(
         Scaffold(
             modifier = modifier.fillMaxSize(),
             topBar = {
-                AppBar {
-                    scope.launch { drawerState.open() }
-                }
+                CenterAlignedTopAppBar(
+                    title = {},
+                    navigationIcon = {
+                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                            Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { /* Handle notification */ }) {
+                            Icon(Icons.Filled.Notifications, contentDescription = "Notifications")
+                        }
+                    }
+                )
             },
             bottomBar = {
                 NavigationBar {
@@ -107,12 +132,23 @@ fun HomePage(
                 }
             }
         ) { innerPadding ->
-            Box(modifier = Modifier.padding(innerPadding)) {
-                ContentScreen(
-                    selectedIndex = selectedIndex,
-                    navController = navController,
-                    authViewModel = authViewModel
-                )
+            Box(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .padding(16.dp)
+            ) {
+                Column {
+                    Text(
+                        text = "Welcome${if (!userName.isNullOrBlank()) ", $userName" else ""} 👋",
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+                    ContentScreen(
+                        selectedIndex = selectedIndex,
+                        navController = navController,
+                        authViewModel = authViewModel
+                    )
+                }
             }
         }
     }
@@ -144,17 +180,29 @@ fun HomeScreen(
     val historyError by homePageViewModel.error.observeAsState()
     val userId = authViewModel.getUserId()
 
+    // ❗ Fix here: Manage async user name
+    var userName by remember { mutableStateOf<String?>(null) }
+
+    // ✅ Fetch username when screen loads
+    LaunchedEffect(Unit) {
+        authViewModel.getUserName {
+            userName = it ?: "User"
+        }
+    }
+
     LaunchedEffect(userId) {
         if (userId != null) {
             homePageViewModel.fetchHistory(userId)
         }
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(8.dp)
     ) {
+        Spacer(modifier = Modifier.height(8.dp))
+
         when {
             userId == null -> {
                 Text("Please log in to see your history.")
@@ -168,17 +216,33 @@ fun HomeScreen(
             else -> {
                 LazyColumn {
                     items(history.size) { index ->
+                        val title = history[index]
+                        val type = when {
+                            title.contains("Quiz", ignoreCase = true) -> "Quiz"
+                            title.contains("Summary", ignoreCase = true) -> "Summary"
+                            title.contains("Flashcards", ignoreCase = true) -> "Flashcards"
+                            else -> "History"
+                        }
+
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                                .padding(vertical = 6.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
                         ) {
-                            Text(
-                                text = history[index],
-                                modifier = Modifier.padding(16.dp),
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(
+                                    text = title,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onBackground
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = type,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
