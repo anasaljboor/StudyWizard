@@ -11,6 +11,10 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import kotlinx.coroutines.tasks.await
 
 class CohereViewModel : ViewModel() {
 
@@ -143,6 +147,22 @@ class CohereViewModel : ViewModel() {
             
             "$text"
         """.trimIndent()
+
     }
+
+
+    suspend fun recognizeTextFromImage(context: Context, uri: Uri): String? {
+        return try {
+            val image = InputImage.fromFilePath(context, uri)
+            val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+            val result = recognizer.process(image).await()
+            result.text
+        } catch (e: Exception) {
+            Log.e("OCR", "Error: ${e.message}")
+            null
+        }
+    }
+
 }
+
 

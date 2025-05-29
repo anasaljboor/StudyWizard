@@ -1,26 +1,12 @@
 package com.example.studywizard.Summarize
 
 import android.content.Context
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -36,6 +22,14 @@ fun SummaryScreen(
     var inputText by remember { mutableStateOf("") }
     val summaryOutput by remember { derivedStateOf { viewModel.summaryOutput } }
     val isLoading by viewModel.isLoading.collectAsState()
+
+    // 🆕 Image picker to allow summary from image
+    val imagePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri: Uri? ->
+            uri?.let { viewModel.generateSummary(context, it) }
+        }
+    )
 
     Column(
         modifier = Modifier
@@ -54,15 +48,21 @@ fun SummaryScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Button(
-            onClick = {
-                if (inputText.isNotBlank()) {
-                    viewModel.generateSummaryFromText(inputText)
-                }
-            },
-            enabled = inputText.isNotBlank()
-        ) {
-            Text("Generate Summary")
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(
+                onClick = {
+                    if (inputText.isNotBlank()) {
+                        viewModel.generateSummaryFromText(inputText)
+                    }
+                },
+                enabled = inputText.isNotBlank()
+            ) {
+                Text("Generate from Text")
+            }
+
+            Button(onClick = { imagePicker.launch("image/*") }) {
+                Text("Upload Image")
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -77,7 +77,10 @@ fun SummaryScreen(
             }
 
             summaryOutput != null -> {
-                Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(4.dp)) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ) {
                     Text(
                         summaryOutput ?: "",
                         modifier = Modifier.padding(16.dp),
@@ -87,7 +90,7 @@ fun SummaryScreen(
             }
 
             else -> {
-                Text("Enter some content above to get started.", style = MaterialTheme.typography.bodyMedium)
+                Text("Enter text or upload an image to generate a summary.", style = MaterialTheme.typography.bodyMedium)
             }
         }
     }
