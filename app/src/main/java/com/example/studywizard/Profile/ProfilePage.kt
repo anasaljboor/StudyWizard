@@ -10,7 +10,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.studywizard.auth.AuthViewModel
-import com.example.studywizard.auth.AuthState
 
 @Composable
 fun ProfilePage(
@@ -18,12 +17,7 @@ fun ProfilePage(
     authViewModel: AuthViewModel
 ) {
     var fullName by remember { mutableStateOf<String?>(null) }
-    val userEmail = authViewModel.getUserId()?.let { uid ->
-        authViewModel.authState.value?.let {
-            authViewModel.authState.value.toString()
-        }
-    }
-    val context = LocalContext.current
+    val email = authViewModel.currentUser?.email ?: "Not Available"
 
     LaunchedEffect(Unit) {
         authViewModel.getUserName { name ->
@@ -31,33 +25,78 @@ fun ProfilePage(
         }
     }
 
-    Column(
+    Surface(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .padding(16.dp),
+        tonalElevation = 4.dp,
+        shape = MaterialTheme.shapes.medium
     ) {
-        Text("Profile", fontSize = 28.sp)
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text("Name: ${fullName ?: "Loading..."}", fontSize = 18.sp)
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text("Email: ${authViewModel.getUserId() ?: "Not Available"}", fontSize = 18.sp)
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Button(
-            onClick = {
-                authViewModel.signout()
-                navController.navigate("login") {
-                    popUpTo("home") { inclusive = true }
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text("Logout")
+            Text(
+                text = "Profile",
+                style = MaterialTheme.typography.headlineLarge
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Info Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.medium,
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp)
+                ) {
+                    Text(
+                        text = "Name",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = fullName ?: "Loading...",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    Divider()
+
+                    Text(
+                        text = "Email",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
+                    Text(
+                        text = email,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(48.dp))
+
+            Button(
+                onClick = {
+                    authViewModel.signout()
+                    navController.navigate("login") {
+                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Text(text = "Logout", style = MaterialTheme.typography.titleMedium)
+            }
         }
     }
 }

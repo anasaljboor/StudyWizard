@@ -8,17 +8,16 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.example.studywizard.auth.AuthState
 import com.example.studywizard.auth.AuthViewModel
-import com.example.studywizard.Navigation.*
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.livedata.observeAsState
-
 
 @Composable
 fun ScaffoldWithDrawer(
     navController: NavController,
     authViewModel: AuthViewModel,
-    currentContent: @Composable () -> Unit
+    currentContent: @Composable () -> Unit,
+    topBar: @Composable (() -> Unit)? = null
 ) {
     val navItemList = listOf(
         NavItem("Home", Icons.Filled.Home, 0),
@@ -45,7 +44,7 @@ fun ScaffoldWithDrawer(
         drawerContent = {
             ModalDrawerSheet {
                 HeadDrawer(authViewModel = authViewModel, onProfileClick = {
-                    navController.navigate("profile") // or whatever your profile route is
+                    navController.navigate("profile")
                 })
                 DrawerBody(
                     items = listOf(
@@ -75,7 +74,7 @@ fun ScaffoldWithDrawer(
         }
     ) {
         Scaffold(
-            topBar = { AppBar { scope.launch { drawerState.open() } } },
+            topBar = topBar ?: { AppBar { scope.launch { drawerState.open() } } },
             bottomBar = {
                 NavigationBar {
                     navItemList.forEachIndexed { index, item ->
@@ -83,7 +82,7 @@ fun ScaffoldWithDrawer(
                             selected = selectedIndex == index,
                             onClick = {
                                 selectedIndex = index
-                                // Optional navigation logic
+                                // You can add navigation logic here if needed
                             },
                             icon = { Icon(item.icon, contentDescription = item.label) },
                             label = { Text(item.label) }
@@ -92,11 +91,9 @@ fun ScaffoldWithDrawer(
                 }
             }
         ) { padding ->
-                Surface(modifier = Modifier.padding(padding)) {
+            Surface(modifier = Modifier.padding(padding)) {
                 currentContent()
             }
         }
     }
 }
-
-

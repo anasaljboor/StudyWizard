@@ -13,10 +13,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.studywizard.Cohere_ML.CohereViewModel
+import com.example.studywizard.auth.AuthViewModel
+import com.example.studywizard.utils.HistoryUtils
+
 @Composable
 fun FlashcardsScreen(
     viewModel: CohereViewModel = viewModel(),
+    navController: NavController,
+    authViewModel: AuthViewModel,
     context: Context = LocalContext.current
 ) {
     var inputText by remember { mutableStateOf("") }
@@ -31,6 +37,14 @@ fun FlashcardsScreen(
             }
         }
     )
+
+    // Add history when flashcardsOutput changes and is not empty
+    LaunchedEffect(flashcardsOutput) {
+        val uid = authViewModel.currentUser?.uid
+        if (!flashcardsOutput.isNullOrEmpty() && uid != null) {
+            HistoryUtils.addHistoryItem(uid, "Flashcards generated")
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Flashcard Generator", style = MaterialTheme.typography.headlineMedium)
@@ -72,43 +86,7 @@ fun FlashcardsScreen(
                     Text("Generating flashcards...")
                 }
             }
-
-            flashcardsOutput != null -> {
-                val flashcards = flashcardsOutput!!.split("\n").filter { it.isNotBlank() }
-
-                // WRAP IN BOX AND LazyColumn TO MAKE IT SCROLLABLE
-                Box(modifier = Modifier.weight(1f)) {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(flashcards.size) { index ->
-                            Card(
-                                modifier = Modifier.fillMaxWidth(),
-                                elevation = CardDefaults.cardElevation(4.dp)
-                            ) {
-                                Text(
-                                    text = flashcards[index],
-                                    modifier = Modifier.padding(16.dp),
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            flashcardsOutput == "EXCEPTION" -> {
-                Text("🚨 An error occurred while generating flashcards.", color = MaterialTheme.colorScheme.error)
-            }
-
-            flashcardsOutput == "EMPTY_RESPONSE" -> {
-                Text("⚠️ Cohere returned an empty response.")
-            }
-
-            else -> {
-                Text("Submit text or upload an image to generate flashcards.", style = MaterialTheme.typography.bodyMedium)
-            }
         }
     }
 }
+

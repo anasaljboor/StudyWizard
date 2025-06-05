@@ -11,6 +11,7 @@ import com.example.studywizard.HomePage.HomePage
 import com.example.studywizard.MenuPages.AboutPage
 import com.example.studywizard.MenuPages.FeaturesPage
 import com.example.studywizard.MenuPages.TeamPage
+import com.example.studywizard.QuizGen.QuizScreen
 import com.example.studywizard.Summarize.SummaryScreen
 import com.example.studywizard.auth.LoginPage
 import com.example.studywizard.auth.SignupPage
@@ -36,7 +37,6 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
             ProfilePage(navController = navController, authViewModel = authViewModel)
         }
 
-        // ✅ Add the missing composables for navigation
         composable("about") {
             AboutPage(navController = navController, authViewModel = authViewModel)
         }
@@ -47,13 +47,13 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
             TeamPage(navController = navController, authViewModel = authViewModel)
         }
         composable("summary") {
-            SummaryScreen()
+            SummaryScreen(navController = navController, authViewModel = authViewModel)
         }
         composable("flashcards") {
-            FlashcardsScreen()
+            FlashcardsScreen(navController = navController, authViewModel = authViewModel)
         }
         composable("quiz") {
-            SummaryScreen()
+            QuizScreen(navController = navController, authViewModel = authViewModel)
         }
     }
 }

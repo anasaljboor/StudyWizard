@@ -25,10 +25,16 @@ fun parseQuizOutput(quiz: String): List<QuizQuestion> {
         }
 
         val answerLine = lines.lastOrNull { it.contains("Answer", ignoreCase = true) }
-        val correct = answerLine?.substringAfter(":")?.trim()?.uppercase()?.takeIf { it in choices.keys } ?: "A"
+        val correct = answerLine
+            ?.substringAfter(":")
+            ?.trim()
+            ?.uppercase()
+            ?.takeIf { it in choices.keys }
 
-        if (questionText.isNotBlank() && choices.size >= 2) {
+        if (questionText.isNotBlank() && choices.size >= 2 && correct != null) {
             result.add(QuizQuestion(questionText, choices, correct))
+        } else {
+            println("⚠️ Skipping question due to missing or invalid answer: \"$questionText\"")
         }
     }
 
