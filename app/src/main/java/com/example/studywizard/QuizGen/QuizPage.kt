@@ -141,6 +141,22 @@ fun QuizScreen(
                     }
                 }
             }
+
+            else -> {
+                // 🟢 This is what was missing!
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text("📝 No quiz generated yet.")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Enter text or upload an image to create your quiz.")
+                }
+            }
         }
+
     }
 }

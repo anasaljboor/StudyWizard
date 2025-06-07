@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -13,55 +15,38 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.example.studywizard.Navigation.ScaffoldWithDrawer
+import androidx.navigation.NavHostController
 import com.example.studywizard.auth.AuthViewModel
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TeamPage(navController: NavController, authViewModel: AuthViewModel) {
-    ScaffoldWithDrawer(
-        navController = navController,
-        authViewModel = authViewModel,
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        "Our Team",
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            )
-        },
-        currentContent = {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.height(16.dp))
+fun TeamPage(navController: NavHostController, authViewModel: AuthViewModel) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            "Our Team",
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+        )
 
-                val teamMembers = listOf(
-                    TeamMember("Anas", "Backend & AI Developer", "👨‍💻"),
-                    TeamMember("Ayham", "Backend & UI/UX Designer", "👨‍💻")
-                )
+        val teamMembers = listOf(
+            TeamMember("Anas", "Backend & AI Developer", "👨‍💻"),
+            TeamMember("Ayham", "Backend & UI/UX Designer", "👨‍💻")
+        )
 
-                teamMembers.forEach { member ->
-                    TeamMemberCard(member)
-                    Spacer(modifier = Modifier.height(20.dp))
-                }
-            }
+        teamMembers.forEach { member ->
+            TeamMemberCard(member)
+            Spacer(modifier = Modifier.height(20.dp))
         }
-    )
+    }
 }
 
 data class TeamMember(val name: String, val role: String, val emoji: String)
